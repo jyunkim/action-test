@@ -1,0 +1,15 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - develop
+      - release/**
+      - project/**
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print
+        run: echo "branch:${{ github.ref }} commit hash:${{ github.sha }}"
