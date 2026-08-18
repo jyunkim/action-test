@@ -25,6 +25,27 @@ jobs:
       - name: Install Codex CLI
         run: npm i -g @openai/codex
 
+      - name: Prepare Codex config
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CODEX_HOME="/home/runner/.codex"
+          mkdir -p "$CODEX_HOME"
+          cat > "$CODEX_HOME/config.toml" <<EOF
+          model = "gpt-5.6-sol"
+          model_provider = "ly-chatai"
+          personality = "pragmatic"
+          model_reasoning_effort = "high"
+
+          [model_providers.ly-chatai]
+          name = "LY ChatAI"
+          base_url = "https://genai-gateway.flava-cloud.com/v1"
+          env_key = "OPENAI_API_KEY"
+          wire_api = "responses"
+          EOF
+
       - name: Run Codex Review
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
