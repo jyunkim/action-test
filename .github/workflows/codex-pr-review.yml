@@ -138,7 +138,7 @@ jobs:
 
       - name: Run Codex
         env:
-          CODEX_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           CODEX_HOME: ${{ runner.temp }}/codex-home
         run: |
           "${RUNNER_TEMP}/codex-cli/node_modules/.bin/codex" exec \
@@ -156,7 +156,7 @@ jobs:
             --config 'model_provider="ly-chatai"' \
             --config 'model_providers.ly-chatai.name="LY ChatAI"' \
             --config 'model_providers.ly-chatai.base_url="https://genai-gateway.flava-cloud.com/v1"' \
-            --config 'model_providers.ly-chatai.env_key="CODEX_API_KEY"' \
+            --config 'model_providers.ly-chatai.env_key="OPENAI_API_KEY"' \
             --config 'model_providers.ly-chatai.wire_api="responses"' \
             --config 'shell_environment_policy.inherit="core"' \
             --config 'shell_environment_policy.ignore_default_excludes=false' \
