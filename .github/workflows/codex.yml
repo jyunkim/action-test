@@ -49,11 +49,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npm config set registry https://npm.linecorp.com/
-          npm config set engine-strict true
-          npm config set prefix "$HOME/.npm-global"
-          echo "$HOME/.npm-global/bin" >> "$GITHUB_PATH"
-          npm install -g @openai/codex
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          brew install codex
 
       - name: Prepare Codex config
         shell: bash
