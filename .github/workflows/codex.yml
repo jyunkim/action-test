@@ -51,7 +51,7 @@ jobs:
           set -euo pipefail
           npm config set prefix "$HOME/.npm-global"
           echo "$HOME/.npm-global/bin" >> "$GITHUB_PATH"
-          npm install -g @openai/codex
+          npm install -g @openai/codex@0.146.0
 
       - name: Prepare Codex config
         shell: bash
