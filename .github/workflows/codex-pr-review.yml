@@ -19,9 +19,7 @@ env:
 jobs:
   authorize:
     name: Check review permission
-    runs-on:
-      group: lcp-order
-      labels: lcp-order-small
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     outputs:
@@ -66,9 +64,7 @@ jobs:
     name: Run Codex review
     needs: authorize
     if: needs.authorize.outputs.authorized == 'true'
-    runs-on:
-      group: lcp-order
-      labels: lcp-order-small
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     outputs:
@@ -188,9 +184,7 @@ jobs:
     name: Publish Codex review
     needs: review
     if: needs.review.result == 'success' && needs.review.outputs.final_message != ''
-    runs-on:
-      group: lcp-order
-      labels: lcp-order-small
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       issues: write
