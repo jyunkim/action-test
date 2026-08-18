@@ -140,7 +140,6 @@ jobs:
       - name: Run Codex
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CODEX_HOME: ${{ runner.temp }}/codex-home
         run: |
           codex exec \
             --cd "${GITHUB_WORKSPACE}/trusted-base" \
