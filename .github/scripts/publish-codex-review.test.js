@@ -231,7 +231,7 @@ test("publishCodexReview rethrows non-validation review errors", async () => {
 
 test("workflow starts Codex outside the untrusted pull request checkout", () => {
   const workflow = fs.readFileSync(
-    path.join(__dirname, "../workflows/codex-pr-review.yml"),
+    path.join(__dirname, "../workflows/codex-auto-review.yml"),
     "utf8",
   );
 
