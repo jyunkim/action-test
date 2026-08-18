@@ -13,15 +13,10 @@ concurrency:
   group: codex-pr-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
-env:
-  NPM_CONFIG_REGISTRY: https://npm.linecorp.com
-
 jobs:
   authorize:
     name: Check review permission
-    runs-on:
-      group: lcp-order
-      labels: lcp-order-small
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     outputs:
@@ -66,9 +61,7 @@ jobs:
     name: Run Codex review
     needs: authorize
     if: needs.authorize.outputs.authorized == 'true'
-    runs-on:
-      group: lcp-order
-      labels: lcp-order-small
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     outputs:
@@ -145,7 +138,7 @@ jobs:
 
       - name: Run Codex
         env:
-          CODEX_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           CODEX_HOME: ${{ runner.temp }}/codex-home
         run: |
           "${RUNNER_TEMP}/codex-cli/node_modules/.bin/codex" exec \
@@ -163,7 +156,7 @@ jobs:
             --config 'model_provider="ly-chatai"' \
             --config 'model_providers.ly-chatai.name="LY ChatAI"' \
             --config 'model_providers.ly-chatai.base_url="https://genai-gateway.flava-cloud.com/v1"' \
-            --config 'model_providers.ly-chatai.env_key="CODEX_API_KEY"' \
+            --config 'model_providers.ly-chatai.env_key="OPENAI_API_KEY"' \
             --config 'model_providers.ly-chatai.wire_api="responses"' \
             --config 'shell_environment_policy.inherit="core"' \
             --config 'shell_environment_policy.ignore_default_excludes=false' \
@@ -188,9 +181,7 @@ jobs:
     name: Publish Codex review
     needs: review
     if: needs.review.result == 'success' && needs.review.outputs.final_message != ''
-    runs-on:
-      group: lcp-order
-      labels: lcp-order-small
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       issues: write
