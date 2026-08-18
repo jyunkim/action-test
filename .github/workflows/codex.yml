@@ -72,12 +72,28 @@ jobs:
           wire_api = "responses"
           EOF
 
+      - name: Show repository skills
+        shell: bash
+        working-directory: wiki
+        run: |
+          set -euo pipefail
+          find .agents/skills -maxdepth 2 -name SKILL.md -print | sort
+
       - name: Run Codex
         shell: bash
         working-directory: wiki
         run: |
           set -euo pipefail
           codex exec --sandbox workspace-write "$CODEX_PROMPT" </dev/null | tee "$RUNNER_TEMP/codex-output.txt"
+
+      - name: Verify smoke-test skill output
+        if: ${{ inputs.prompt == '$skill-smoke-test' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -qx "SKILL_SMOKE_TEST_PASSED" "$RUNNER_TEMP/codex-output.txt"
+          grep -qx "skill=skill-smoke-test" "$RUNNER_TEMP/codex-output.txt"
+          grep -qx "source=.agents/skills/skill-smoke-test/SKILL.md" "$RUNNER_TEMP/codex-output.txt"
 
       - name: Publish workflow summary
         if: always()
