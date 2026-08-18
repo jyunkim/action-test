@@ -1,0 +1,94 @@
+name: Codex Skill Runner
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: Prompt sent to Codex. Mention a skill name to force a specific skill.
+        required: true
+        type: string
+      model:
+        description: Model name used by Codex.
+        required: false
+        type: string
+        default: gpt-5.6-luna
+
+permissions:
+  contents: read
+
+jobs:
+  codex:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CODEX_BASE_URL: https://genai-gateway.flava-cloud.com/v1
+      CODEX_TOKEN: ${{ secrets.OPENAI_API_KEY }}
+      CODEX_HOME: /home/runner/.codex
+      CODEX_MODEL: ${{ inputs.model }}
+      CODEX_PROMPT: ${{ inputs.prompt }}
+      DISABLE_NON_ESSENTIAL_MODEL_CALLS: "1"
+    steps:
+      - name: Check required secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${CODEX_BASE_URL}" || { echo "Missing CODEX_BASE_URL"; exit 1; }
+          test -n "${CODEX_TOKEN}" || { echo "Missing secret: CODEX_TOKEN"; exit 1; }
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Codex CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm config set prefix "$HOME/.npm-global"
+          echo "$HOME/.npm-global/bin" >> "$GITHUB_PATH"
+          npm install -g @openai/codex
+
+      - name: Prepare Codex config
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$CODEX_HOME"
+          cat > "$CODEX_HOME/config.toml" <<EOF
+          model = "${CODEX_MODEL}"
+          model_provider = "ly-chatai"
+          personality = "pragmatic"
+          model_reasoning_effort = "high"
+
+          [model_providers.ly-chatai]
+          name = "LY ChatAI"
+          base_url = "${CODEX_BASE_URL}"
+          env_key = "CODEX_TOKEN"
+          wire_api = "responses"
+          EOF
+
+      - name: Run Codex
+        shell: bash
+        run: |
+          set -euo pipefail
+          codex exec --sandbox workspace-write "$CODEX_PROMPT" </dev/null | tee "$RUNNER_TEMP/codex-output.txt"
+
+      - name: Publish workflow summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Codex Output"
+            echo
+            echo '```text'
+            if [ -f "$RUNNER_TEMP/codex-output.txt" ]; then
+              sed -n '1,400p' "$RUNNER_TEMP/codex-output.txt"
+            else
+              echo "No output captured."
+            fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

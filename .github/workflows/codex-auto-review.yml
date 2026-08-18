@@ -1,0 +1,67 @@
+name: Codex Auto Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  codex-review:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write  # PR 코멘트 작성 권한
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 전체 히스토리 필요 (diff 비교용)
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Codex CLI
+        run: npm i -g @openai/codex
+
+      - name: Run Codex Review
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          codex -s read-only -a never exec \
+            --ephemeral \
+            --json \
+            -o review-result.json \
+            "이 PR의 변경사항을 리뷰해줘.
+             보안 취약점, 성능 문제, 코딩 컨벤션 위반을 중심으로 찾아줘.
+             결과는 반드시 JSON 배열 형식으로 출력해.
+             형식: [{\"file\": \"파일경로\", \"line\": 줄번호, \"severity\": \"high|medium|low\", \"message\": \"설명\"}]"
+
+      - name: Post Review Comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('review-result.json', 'utf8'));
+            
+            if (results.length === 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: '✅ Codex 자동 리뷰: 이슈 없음'
+              });
+              return;
+            }
+            
+            const body = results.map(r =>
+              `- **[${r.severity.toUpperCase()}]** \`${r.file}:${r.line}\` — ${r.message}`
+            ).join('\n');
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `## Codex 자동 리뷰 결과\n\n${body}`
+            });
