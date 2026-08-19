@@ -86,6 +86,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
 
+      - name: Install sandbox prerequisite
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bubblewrap
+          command -v bwrap
+          bwrap --version
+
       - name: Install Codex CLI
         run: |
           mkdir -p "${RUNNER_TEMP}/codex-home"
