@@ -13,9 +13,6 @@ concurrency:
   group: codex-pr-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
-env:
-  NPM_CONFIG_REGISTRY: https://npm.linecorp.com
-
 jobs:
   authorize:
     name: Check review permission
