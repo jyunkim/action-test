@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      CODEX_BASE_URL: https://us.api.openai.com
+      CODEX_BASE_URL: https://us.api.openai.com/v1
       CODEX_TOKEN: ${{ secrets.OPENAI_API_KEY }}
       CODEX_HOME: /home/runner/.codex
       CODEX_MODEL: ${{ inputs.model }}
