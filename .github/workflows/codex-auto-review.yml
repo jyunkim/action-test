@@ -87,11 +87,31 @@ jobs:
         uses: actions/setup-node@v4
 
       - name: Install sandbox prerequisite
+        shell: bash
         run: |
+          set -euo pipefail
+    
           sudo apt-get update
-          sudo apt-get install -y bubblewrap
-          command -v bwrap
+          sudo apt-get install -y \
+            bubblewrap \
+            apparmor-profiles \
+            apparmor-utils
+    
+          sudo install -m 0644 \
+            /usr/share/apparmor/extra-profiles/bwrap-userns-restrict \
+            /etc/apparmor.d/bwrap-userns-restrict
+    
+          sudo apparmor_parser -r \
+            /etc/apparmor.d/bwrap-userns-restrict
+    
           bwrap --version
+          bwrap \
+            --unshare-user \
+            --unshare-net \
+            --uid 0 \
+            --gid 0 \
+            --ro-bind / / \
+            /bin/true
 
       - name: Install Codex CLI
         run: |
